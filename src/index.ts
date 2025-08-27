@@ -1,18 +1,36 @@
-import { ValidationResult, ValidationOptions, ReasonCode } from "./types";
+import {
+  ValidationResult,
+  ValidationOptions,
+  ValidationMessages,
+} from "./types";
 import { DISPOSABLE_DOMAINS } from "./data/disposable-domains";
 import dns from "dns/promises";
 import { fetchTLDs } from "./utils/fetch-tlds";
 import { smtpCheck } from "./utils/smtp-check";
+import { messages } from "./data/messages";
 
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const DISPOSABLE_SET = new Set(DISPOSABLE_DOMAINS);
+
+export type ReasonCode =
+  | "MISSING_AT"
+  | "MISSING_USER"
+  | "MISSING_DOMAIN"
+  | "TOO_LONG"
+  | "INVALID_FORMAT"
+  | "INVALID_TLD"
+  | "DISPOSABLE"
+  | "NO_MX"
+  | "SMTP_FAIL"
+  | "VALID";
 
 let defaultOptions: ValidationOptions = {
   checkDNS: true,
   deepCheckSMTP: false,
   allowDisposable: false,
   checkTLD: true,
+  lang: "en",
 };
 
 export function setDefaultOptions(options: ValidationOptions) {
@@ -44,9 +62,11 @@ export async function validate(
   email: string,
   options: ValidationOptions = {}
 ): Promise<ValidationResult & { reasonCode: ReasonCode }> {
-  const { checkDNS, deepCheckSMTP, allowDisposable, checkTLD } = {
-    ...defaultOptions,
-    ...options,
+  const opts = { ...defaultOptions, ...options };
+
+  const langPack: ValidationMessages = {
+    ...messages[opts.lang || "en"],
+    ...opts.customMessages,
   };
 
   email = email.trim().toLowerCase();
@@ -59,7 +79,7 @@ export async function validate(
       "",
       "invalid",
       "MISSING_AT",
-      "Email must contain a single '@' symbol",
+      langPack.missingAt,
       false
     );
   }
@@ -73,7 +93,7 @@ export async function validate(
       domain,
       "invalid",
       "MISSING_USER",
-      "Missing username before '@'",
+      langPack.missingUser,
       false
     );
   }
@@ -85,43 +105,19 @@ export async function validate(
       domain,
       "invalid",
       "MISSING_DOMAIN",
-      "Domain must contain a '.' (dot)",
+      langPack.missingDomain,
       false
     );
   }
 
-  if (user.length > 64) {
+  if (user.length > 64 || domain.length > 255 || email.length > 254) {
     return makeResult(
       email,
       user,
       domain,
       "invalid",
       "TOO_LONG",
-      "Username too long",
-      false
-    );
-  }
-
-  if (domain.length > 255) {
-    return makeResult(
-      email,
-      user,
-      domain,
-      "invalid",
-      "TOO_LONG",
-      "Domain too long",
-      false
-    );
-  }
-
-  if (email.length > 254) {
-    return makeResult(
-      email,
-      user,
-      domain,
-      "invalid",
-      "TOO_LONG",
-      "Email exceeds maximum length",
+      langPack.tooLong,
       false
     );
   }
@@ -133,12 +129,12 @@ export async function validate(
       domain,
       "invalid",
       "INVALID_FORMAT",
-      "Email format does not match standard pattern",
+      langPack.invalidFormat,
       false
     );
   }
 
-  if (checkTLD) {
+  if (opts.checkTLD) {
     const tld = domain.split(".").pop()!.toUpperCase();
     const tlds = await fetchTLDs();
     if (!tlds.includes(tld)) {
@@ -148,25 +144,25 @@ export async function validate(
         domain,
         "invalid",
         "INVALID_TLD",
-        `Invalid or unknown TLD: .${tld}`,
+        langPack.invalidTLD,
         false
       );
     }
   }
 
-  if (!allowDisposable && DISPOSABLE_SET.has(domain)) {
+  if (!opts.allowDisposable && DISPOSABLE_SET.has(domain)) {
     return makeResult(
       email,
       user,
       domain,
       "invalid",
       "DISPOSABLE",
-      "Disposable email domain detected",
+      langPack.disposable,
       true
     );
   }
 
-  if (checkDNS) {
+  if (opts.checkDNS) {
     const domainOk = await checkDomain(domain);
     if (!domainOk) {
       return makeResult(
@@ -175,13 +171,13 @@ export async function validate(
         domain,
         "invalid",
         "NO_MX",
-        "Domain does not have valid MX records",
+        langPack.noMX,
         false
       );
     }
   }
 
-  if (deepCheckSMTP) {
+  if (opts.deepCheckSMTP) {
     const smtpOk = await smtpCheck(email, domain);
     if (!smtpOk) {
       return makeResult(
@@ -190,7 +186,7 @@ export async function validate(
         domain,
         "invalid",
         "SMTP_FAIL",
-        "SMTP check failed (user may not exist)",
+        langPack.smtpFail,
         false
       );
     } else {
@@ -200,7 +196,7 @@ export async function validate(
         domain,
         "valid",
         "VALID",
-        "Email accepted by SMTP server (best effort)",
+        langPack.valid,
         false
       );
     }
@@ -212,14 +208,7 @@ export async function validate(
     domain,
     "valid",
     "VALID",
-    "Email is valid",
+    langPack.valid,
     false
   );
-}
-
-export async function validateMany(
-  emails: string[],
-  options: ValidationOptions = {}
-): Promise<(ValidationResult & { reasonCode: ReasonCode })[]> {
-  return Promise.all(emails.map((email) => validate(email, options)));
 }

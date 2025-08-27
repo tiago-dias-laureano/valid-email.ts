@@ -3,6 +3,8 @@ export interface ValidationOptions {
   deepCheckSMTP?: boolean;
   allowDisposable?: boolean;
   checkTLD?: boolean;
+  lang?: "en" | "pt";
+  customMessages?: Partial<ValidationMessages>;
 }
 
 export interface ValidationResult {
@@ -25,3 +27,16 @@ export type ReasonCode =
   | "NO_MX"
   | "SMTP_FAIL"
   | "VALID";
+
+export interface ValidationMessages {
+  missingAt: string;
+  missingUser: string;
+  missingDomain: string;
+  tooLong: string;
+  invalidFormat: string;
+  invalidTLD: string;
+  disposable: string;
+  noMX: string;
+  smtpFail: string;
+  valid: string;
+}

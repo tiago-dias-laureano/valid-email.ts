@@ -15,6 +15,7 @@ Uma biblioteca **TypeScript-first** para validação de emails, incluindo:
 - Bloqueio de domínios descartáveis
 - Checagem de DNS (MX records)
 - Deep Check SMTP (opcional, _best effort_)
+- Suporte a múltiplos idiomas (inglês e português)
 
 ---
 
@@ -67,6 +68,8 @@ export interface ValidationOptions {
   deepCheckSMTP?: boolean; // padrão: false - conecta via SMTP (lento e opcional)
   allowDisposable?: boolean; // padrão: false - bloqueia descartáveis
   checkTLD?: boolean; // padrão: true - valida TLDs oficiais IANA
+  lang?: "en" | "pt"; // padrão: "en" - seleciona idioma
+  customMessages?: ValidationMessages; // sobrescreve mensagens padrão
 }
 ```
 

@@ -1,0 +1,26 @@
+export const messages = {
+  en: {
+    missingAt: "Email must contain a single '@' symbol",
+    missingUser: "Missing username before '@'",
+    missingDomain: "Domain must contain a '.' (dot)",
+    tooLong: "Exceeded maximum length allowed by RFC",
+    invalidFormat: "Email format does not match standard pattern",
+    invalidTLD: "Invalid or unknown TLD",
+    disposable: "Disposable email domain detected",
+    noMX: "Domain does not have valid MX records",
+    smtpFail: "SMTP check failed (user may not exist)",
+    valid: "Email is valid",
+  },
+  pt: {
+    missingAt: "O email deve conter um único '@'",
+    missingUser: "Faltando usuário antes do '@'",
+    missingDomain: "O domínio deve conter um '.' (ponto)",
+    tooLong: "Tamanho máximo permitido pelo RFC excedido",
+    invalidFormat: "Formato de email inválido",
+    invalidTLD: "TLD inválido ou desconhecido",
+    disposable: "Domínio de email descartável detectado",
+    noMX: "Domínio sem registros MX válidos",
+    smtpFail: "Falha no check SMTP (usuário pode não existir)",
+    valid: "Email válido",
+  },
+};
