@@ -1,6 +1,6 @@
 {
   "name": "valid-email.ts",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Validador de email em TypeScript com TLDs, DNS, SMTP e descartáveis.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
