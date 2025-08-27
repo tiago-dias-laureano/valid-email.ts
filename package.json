@@ -2,7 +2,7 @@
   "name": "valid-email.ts",
   "version": "1.0.0",
   "description": "Validador de email em TypeScript com TLDs, DNS, SMTP e descartáveis.",
-  "main": "dist/index.js",            
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
@@ -22,10 +22,17 @@
     "typescript",
     "disposable-email",
     "email-disposable",
-    "email-validator-typescript"
+    "email-validator-typescript",
+    "tlds",
+    "dns",
+    "smtp"
   ],
   "author": "Tiago Dias Laureano",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tiago-dias-laureano/valid-email.ts"
+  },
   "devDependencies": {
     "@types/node": "^24.3.0",
     "@vitest/coverage-v8": "^3.2.4",
